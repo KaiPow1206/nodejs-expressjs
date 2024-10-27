@@ -1,48 +1,39 @@
 import initModels from "../models/init-models.js";
 import sequelize from '../models/connect.js';
 import { NUMBER, Op, where } from 'sequelize';
-import { PrismaClient } from "@prisma/client";
-import users from "../models/users.js";
+import video from "../models/video.js";
 
 
 const model = initModels(sequelize);
 
-const prisma = new PrismaClient();
 
 const getListVideo = async (req,res) => {
    try {
-      // let data = await model.video.findAll();
-      let data = await prisma.video.findMany();
+      let data = await model.video.findAll();
       res.status(200).json(data);
    } catch (error) {
       console.log(error)
-      return res.status(404).json({message:"error"});
+      return res.status(500).json({message:"error"});
    }
 }
 
 const getTyppeVideo = async (req,res) => {
    try {
-      // let data = await model.video_type.findAll();
-      let data = await prisma.video_type.findMany();
+      let data = await model.video_type.findAll();
       res.status(200).json(data);
    } catch (error) {
-      return res.status(404).json({message:"error"});
+      return res.status(500).json({message:"error"});
    }
 }
 
 const getTyppeDetails = async (req,res) => {
    try {
       let {typeID}= req.params;
-      // let data = await model.video.findAll({
-      //    where: {
-      //       type_id:typeID
-      //    }
-      // })
-      let data = await prisma.video.findMany({
+      let data = await model.video.findAll({
          where: {
-            type_id: Number(typeID)
+            type_id:typeID
          }
-      });
+      })
       
       return res.status(200).json(data);
    } catch (error) {
@@ -62,17 +53,13 @@ const getVideoPage = async(req,res) => {
       return res.status(404).json({message:"Size is wrong"});
    }
    let index = (page - 1) * size;
-   // let data = await model.video.findAll({
-   //    offset:index,
-   //    limit:size,
-   // })
-     let data = await prisma.video.findMany({
-      skip: index,
-      take:size,
+   let data = await model.video.findAll({
+      offset:index,
+      limit:size,
    })
    res.status(200).json(data)
   } catch (error) {
-   return res.status(404).json({message:"error"});
+   return res.status(500).json({message:"error"});
   }
 }
 
@@ -87,9 +74,27 @@ const getVideo = async (req,res) => {
       res.status(200).json(data);
    } catch (error) {
       console.log(error)
-      return res.status(404).json({message:"error"});
+      return res.status(500).json({message:"error"});
    }
 }
+
+const searchVideo = async (req,res) => {
+  try {
+   let video_name= req.query.video_name || "";
+   let data= await model.video.findAll({
+      where:{
+         video_name:{
+            [Op.like]: `%${video_name}%` ,
+         }
+      },
+      // attributes:['video_name','thumbnail','source','description']
+   });
+   return res.status(200).json(data);
+  } catch (error) {
+   return res.status(500).json({message:"error"});
+  }
+}
+
 
 
 export{
@@ -98,4 +103,5 @@ export{
    getTyppeDetails,
    getVideoPage,
    getVideo,
+   searchVideo
 }

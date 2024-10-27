@@ -5,23 +5,16 @@ import jwt from 'jsonwebtoken';
 import transporter from "../config/transporter.js";
 import { createRefToken, createRefTokenAsyncKey, createToken, createTokenAsyncKey } from "../config/jwt.js";
 import cypto from 'crypto';
-import { PrismaClient } from "@prisma/client";
 import speakeasy from 'speakeasy';
 
 
-const prisma = new PrismaClient();
 const model = initModels(sequelize);
 
 const register = async(req,res,next) => {
   try {
       const {fullName, email, pass}= req.body;
       console.log({fullName,email,pass});
-      // const userExits= await model.users.findOne({
-      //    where:{
-      //       email:email,
-      //    }
-      // });
-      const userExits= await prisma.users.findFirst({
+      const userExits= await model.users.findOne({
          where:{
             email:email,
          }
@@ -31,24 +24,15 @@ const register = async(req,res,next) => {
       }
       const secret = speakeasy.generateSecret({length:15});
       //B3: thêm người mới vào
-      // const newAccount  = await model.users.create({
-      //    full_name:fullName,
-      //    email:email,
-      //    pass_word:bcrypt.hashSync(pass,10),
-      //    secret: secret.base32
-      // });
-      // tạo secret cho login 2 lớp
-      const newAccount  = await prisma.users.create({
-         data:{
-            full_name:fullName,
-            email:email,
-            pass_word:bcrypt.hashSync(pass,10),
-            secret: secret.base32
-         }
+      const newAccount  = await model.users.create({
+         full_name:fullName,
+         email:email,
+         pass_word:bcrypt.hashSync(pass,10),
+         secret: secret.base32 // tạo secret cho login 2 lớp
       });
       // cấu hình info email
       const mailOption = {
-         from:'nguyennhoanhthai@gmail.com',
+         from:process.env.MAIL_USER,
          to: email,
          subject:"Welcome to our service",
          text:`Hello ${fullName} .Best Regards.`
