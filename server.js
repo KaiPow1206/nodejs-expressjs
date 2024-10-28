@@ -79,6 +79,48 @@ io.on('connection',(socket) => {
   })
 });
 
+// nhận event like, dislike
+let likeCount = 0;
+let dislikeCount = 0;
+io.on("connection", (socket) => {
+  console.log("New client connected");
+
+  socket.emit("send-like", likeCount);
+
+  socket.on("like", () => {
+    likeCount++;
+    io.emit("send-like", likeCount);
+  });
+
+  socket.on("unlike", () => {
+    if (likeCount > 0) {
+      likeCount--;
+      io.emit("send-like", likeCount);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+  
+  // Thêm sự kiện cho dislike
+  socket.on("dislike", () => {
+    dislikeCount++;
+    io.emit("send-dislike", dislikeCount);
+  });
+
+  socket.on("undislike", () => {
+    if (dislikeCount > 0) {
+      dislikeCount--;
+      io.emit("send-dislike", dislikeCount);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+  });
+});
+
 // BE sẽ nhận event từ FE client 
 
 

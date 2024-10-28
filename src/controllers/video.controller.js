@@ -87,7 +87,6 @@ const searchVideo = async (req,res) => {
             [Op.like]: `%${video_name}%` ,
          }
       },
-      // attributes:['video_name','thumbnail','source','description']
    });
    return res.status(200).json(data);
   } catch (error) {

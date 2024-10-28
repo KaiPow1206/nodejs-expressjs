@@ -162,6 +162,20 @@ const uploadAvatar = async (req,res) => {
    }
 }
 
+const detailUser = async (req,res) => {
+   try {
+      let {userID} =req.params;
+      let data = await model.users.findOne({
+         where:{
+            user_id:userID
+         }
+      });
+      res.status(200).json(data);
+   } catch (error) {
+      console.log(error)
+      return res.status(500).json({message:"error"});
+   }
+}
 
 
 export{
@@ -170,4 +184,5 @@ export{
    deleteUser,
    updateUser,
    uploadAvatar,
+   detailUser
 }
