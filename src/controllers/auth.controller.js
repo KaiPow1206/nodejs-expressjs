@@ -31,7 +31,7 @@ const register = async(req,res,next) => {
          secret: secret.base32 // tạo secret cho login 2 lớp
       });
       // cấu hình info email
-      const mailOption = {
+      const Optionmail = {
          from:process.env.MAIL_USER,
          to: email,
          subject:"Welcome to our service",
