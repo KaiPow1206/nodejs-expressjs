@@ -2,6 +2,7 @@ import { OK,INTERNAL_SERVER } from '../../const.js';
 import initModels from "../models/init-models.js";
 import sequelize from '../models/connect.js';
 import { Op, where } from 'sequelize';
+import bcrypt from 'bcrypt';
 import { PrismaClient } from "@prisma/client";
 
 const model = initModels(sequelize);
@@ -101,7 +102,7 @@ const deleteUser = async(req,res) => {
 const updateUser = async(req,res) => {
    try {
       const {user_id} = req.params;
-      const {full_name, pass_word}= req.body;
+      const {full_name, pass_word,email,avatar}= req.body;
       //check user có hay không
       // let user = await model.users.findByPk(user_id);
 
@@ -113,7 +114,6 @@ const updateUser = async(req,res) => {
       if(!user){
          return res.status(404).json({message:"User not found"});
       }
-
       // cách 1 
       // let data = await model.users.update({
       //    full_name,pass_word},
@@ -122,10 +122,15 @@ const updateUser = async(req,res) => {
       //    }
       // )
       await prisma.users.update({
-         data:{full_name,pass_word},
+         data:{full_name,pass_word,email,avatar},
          where:{
-             user_id: Number(user_id)
-         }
+            user_id: Number(user_id),
+
+         },
+         data: {
+            full_name,
+            pass_word:bcrypt.hashSync(pass_word,10),
+        },
      })
       // cách 2 
       // user.full_name = full_name || user.full_name;
@@ -142,26 +147,28 @@ const updateUser = async(req,res) => {
 const uploadAvatar = async (req,res) => {
    try {
       let file = req.file;
-      let userID=req.body.userID;
+      let userID= req.params.userID;
+
       let user = await model.users.findOne({
          where:{
             user_id:userID
          }
       })
 
+
       if(!user){
          return res.status(404).json({message: "User not found"});
       }
-      
       let avatarPath = `/public/imgs/${file.filename}`;
       user.avatar=avatarPath || user.avatar;
       await user.save();
+
       return res.status(200).json({message: "Avatar updated successfully",data:avatarPath});
+
    } catch (error) {
       return res.status(500).json({message:"error api upload avatar"});
    }
 }
-
 const detailUser = async (req,res) => {
    try {
       let {userID} =req.params;
@@ -176,7 +183,6 @@ const detailUser = async (req,res) => {
       return res.status(500).json({message:"error"});
    }
 }
-
 
 export{
    creatUser,
