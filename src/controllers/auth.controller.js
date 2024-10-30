@@ -32,13 +32,13 @@ const register = async(req,res,next) => {
       });
       // cấu hình info email
       const Optionmail = {
-         from:process.env.MAIL_USER,
+         from:"nguyennhoanhthai@gmail.com",
          to: email,
          subject:"Welcome to our service",
          text:`Hello ${fullName} .Best Regards.`
       }
       // gửi mail
-      transporter.sendMail(mailOption,(error,info) => {
+      transporter.sendMail(Optionmail,(error,info) => {
          if(error){
             return res.status(500).json({message:"error"});
          }
