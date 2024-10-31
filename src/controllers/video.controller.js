@@ -94,6 +94,64 @@ const searchVideo = async (req,res) => {
   }
 }
 
+const getVideosByUserId = async (req, res) => {
+   try {
+      let { userId } = req.params;
+      let videos = await model.video.findAll({
+         where: {
+            user_id: userId
+         }
+      });
+      res.status(200).json(videos);
+   } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "error" });
+   }
+}
+
+const uploadVideoAndThumbnail = async (req, res) => {
+   try {
+       // Lấy file video và thumbnail từ request
+       let videoFile = req.files['source'] ? req.files['source'][0] : null; // Lấy file video
+       let thumbnailFile = req.files['thumbnail'] ? req.files['thumbnail'][0] : null; // Lấy file thumbnail
+
+       // Lấy user_id từ params
+       let userId = req.params.userId;
+
+       // Lấy description và video_name từ body
+       let { description, video_name } = req.body; // Thêm dòng này để lấy thông tin từ body
+
+       // Kiểm tra xem file video có tồn tại không
+       if (!videoFile) {
+           return res.status(400).json({ message: "No video file provided" });
+       }
+
+       // Kiểm tra xem file thumbnail có tồn tại không
+       if (!thumbnailFile) {
+           return res.status(400).json({ message: "No thumbnail file provided" });
+       }
+
+       // Tạo đường dẫn cho video và thumbnail
+       let videoPath = `/public/videos/${videoFile.filename}`; // Đường dẫn video
+       let thumbnailPath = `/public/thumbnails/${thumbnailFile.filename}`; // Đường dẫn thumbnail
+
+       // Tạo video mới với user_id
+       let newVideo = await model.video.create({
+           user_id: userId, // Lưu user_id
+           source: videoPath, // Lưu đường dẫn video
+           thumbnail: thumbnailPath, // Lưu đường dẫn thumbnail
+           description, // Lưu description
+           video_name // Lưu video_name
+       });
+
+       return res.status(201).json({ message: "Video and thumbnail uploaded successfully", data: newVideo });
+
+   } catch (error) {
+       console.error(error);
+       return res.status(500).json({ message: "Error in uploading video and thumbnail" });
+   } 
+};
+
 
 
 export{
@@ -102,5 +160,7 @@ export{
    getTyppeDetails,
    getVideoPage,
    getVideo,
-   searchVideo
+   searchVideo,
+   uploadVideoAndThumbnail,
+   getVideosByUserId
 }
